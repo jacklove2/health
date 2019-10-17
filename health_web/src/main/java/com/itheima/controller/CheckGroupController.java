@@ -71,6 +71,7 @@ public class CheckGroupController {
 
     @GetMapping("/findAll")
     public Result findAll() {
+        //调用业务服务查找所有
         List<CheckGroup> checkGroupList = checkGroupService.findAll();
         return new Result(true, MessageConstant.QUERY_CHECKGROUP_SUCCESS,checkGroupList);
     }
