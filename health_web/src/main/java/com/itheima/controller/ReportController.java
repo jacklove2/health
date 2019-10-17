@@ -136,7 +136,7 @@ public class ReportController {
      */
     @PostMapping("/getMemberSexProportion")
     public Result getMemberSexProportion() {
-
+        //那是假的
         Map<String, Object> map = memberService.getMemberSexProportion();
 
         return new Result(true, MessageConstant.GET_MEMBER_NUMBER_REPORT_SUCCESS, map);
