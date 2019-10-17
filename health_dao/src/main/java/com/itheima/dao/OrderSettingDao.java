@@ -30,5 +30,8 @@ public interface OrderSettingDao {
     //更新已预约人数
     void editReservationsByOrderDate(OrderSetting os);
 
+    //删除预约设置数据
+    void delOrderSetting(String formatdate);
+
 
 }

@@ -42,12 +42,12 @@
         <result property="attention" column="attention"/>
         <result property="img" column="img"/>
         <!--检查组-->
-        <collection property="checkGroups" ofType="CheckGroup" >
+        <collection property="checkGroups" ofType="CheckGroup">
             <result property="id" column="checkgroup_id"/>
             <result property="name" column="checkgroup_name"/>
             <result property="remark" column="chenckgroup_remark"/>
             <!--检查项-->
-            <collection property="checkItems" ofType="CheckItem" >
+            <collection property="checkItems" ofType="CheckItem">
                 <result property="id" column="checkitem_id"/>
                 <result property="name" column="checkitem_name"/>
             </collection>
@@ -56,6 +56,14 @@
 
     <select id="findPackageById" parameterType="int" resultType="Package">
         select * FROM t_package where id=#{id}
+    </select>
+
+    <!--套餐的分页展示-->
+    <select id="findByPage" parameterType="String" resultType="Package">
+        SELECT * FROM t_package
+        <if test="value!=null and value.length >0">
+            where CODE LIKE #{value} OR NAME LIKE #{value} or helpCode like #{value}
+        </if>
     </select>
 
 </mapper>

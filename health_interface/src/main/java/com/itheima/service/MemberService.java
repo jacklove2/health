@@ -2,6 +2,7 @@ package com.itheima.service;
 
 import com.itheima.pojo.Member;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,4 +17,11 @@ public interface MemberService {
     void add(Member member);
     //查询会员数据
     Map<String,Object> getMemberReport();
+
+    /** 
+     * @Description: 查询男女占比
+     * @Param: [] 
+     * @return: java.util.Map<java.lang.String,java.lang.Object> 
+     */
+    Map<String,Object> getMemberSexProportion();
 }

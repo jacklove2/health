@@ -1,6 +1,7 @@
 package com.itheima.controller;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.itheima.constant.MessageConstant;
 import com.itheima.entity.Result;
 import com.itheima.service.PackageService;
@@ -11,6 +12,7 @@ import com.itheima.pojo.Package;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -26,7 +28,7 @@ public class PackageController {
 
     //查询套餐列表
     @GetMapping("/getPackage")
-    public Result getPackage() {
+    public Result getPackage() throws Exception {
         //查询所有的套餐列表
         List<Package> packageList = packageService.findAll();
         if (packageList != null) {
@@ -39,7 +41,7 @@ public class PackageController {
 
     //查询套餐详情
     @GetMapping("/findById")
-    public Result findById(Integer id) {
+    public Result findById(Integer id) throws IOException {
         //调用业务层方法查询套餐详情
         Package pkg = packageService.findById(id);
         pkg.setImg("http://" + QiNiuUtil.DOMAIN + "/" + pkg.getImg());
@@ -48,7 +50,7 @@ public class PackageController {
 
     //查询套餐基本详情
     @GetMapping("/findPackageById")
-    public Result findPackageById(Integer id) {
+    public Result findPackageById(Integer id) throws IOException {
         //调用业务层方法查询套餐基本信息
         Package pkg = packageService.findPackageById(id);
         pkg.setImg("http://" + QiNiuUtil.DOMAIN + "/" + pkg.getImg());

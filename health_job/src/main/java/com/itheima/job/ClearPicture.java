@@ -20,10 +20,16 @@ public class ClearPicture {
     private JedisPool jedisPool;
 
     public void doClear() {
-       
+        Jedis jedis = jedisPool.getResource();
+        // 1. 取出redis中所有图片集合-保存到数据库的图片集合
+        Set<String> need2Delete = jedis.sdiff(RedisConstant.SETMEAL_PIC_RESOURCES, RedisConstant.SETMEAL_PIC_DB_RESOURCES);
+        // 2. 调用QiNiuUitl删除服务器上的图片
+        QiNiuUtil.removeFiles(need2Delete.toArray(new String[]{}));
+        // 3. 成功要删除redis中的缓存，所有的，保存到数据库
+        jedis.del(RedisConstant.SETMEAL_PIC_RESOURCES, RedisConstant.SETMEAL_PIC_DB_RESOURCES);
     }
 
     public static void main(String[] args) {
-        ApplicationContext ac = new ClassPathXmlApplicationContext("classpath:spring-job.xml");
+        ApplicationContext ac = new ClassPathXmlApplicationContext("classpath:spring-chearpic-quarz.xml");
     }
 }

@@ -1,7 +1,10 @@
 package com.itheima.service;
 
+import com.itheima.entity.PageResult;
+import com.itheima.entity.QueryPageBean;
 import com.itheima.pojo.Package;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -12,10 +15,16 @@ import java.util.List;
 public interface PackageService {
     //添加套餐信息
     void addPackage(Package pkg, Integer[] checkgroupIds);
+
     //查询套餐列表
-    List<Package> findAll();
+    List<Package> findAll() throws IOException;
+
     //查询套餐详情
-    Package findById(Integer id);
+    Package findById(Integer id) throws IOException;
+
     //查询套餐基本详情
-    Package findPackageById(Integer id);
+    Package findPackageById(Integer id) throws IOException;
+
+    //套餐分页查询
+    PageResult<Package> findByPage(QueryPageBean queryPageBean);
 }

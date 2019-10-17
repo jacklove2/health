@@ -3,7 +3,10 @@ package com.itheima.controller;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.itheima.constant.MessageConstant;
 import com.itheima.constant.RedisConstant;
+import com.itheima.entity.PageResult;
+import com.itheima.entity.QueryPageBean;
 import com.itheima.entity.Result;
+import com.itheima.pojo.CheckGroup;
 import com.itheima.pojo.Package;
 import com.itheima.service.PackageService;
 import com.itheima.untils.QiNiuUtil;
@@ -14,6 +17,7 @@ import redis.clients.jedis.JedisPool;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,7 +51,7 @@ public class PackageController {
             //3.将文件转化成流
             QiNiuUtil.uploadViaByte(imgFile.getBytes(), newFileName);
             //保存到redis,所有图片
-            jedisPool.getResource().sadd(RedisConstant.SETMEAL_PIC_RESOURCES,newFileName);
+            jedisPool.getResource().sadd(RedisConstant.SETMEAL_PIC_RESOURCES, newFileName);
             //4.将文件存到map里,文件名为key,值为上传到七牛的域名
             Map<String, String> resultMap = new HashMap<>();
             resultMap.put("picName", newFileName);
@@ -66,8 +70,20 @@ public class PackageController {
         //调用业务方法插入数据
         packageService.addPackage(pkg, checkgroupIds);
         //保存图片到redis中,DB集合
-        jedisPool.getResource().sadd(RedisConstant.SETMEAL_PIC_DB_RESOURCES,pkg.getImg());
+        jedisPool.getResource().sadd(RedisConstant.SETMEAL_PIC_DB_RESOURCES, pkg.getImg());
         return new Result(true, MessageConstant.ADD_PACKAGE_SUCCESS);
+    }
+
+    /** 
+     * @Description:分页查询套餐信息
+     * @Param: [queryPageBean]
+     * @return: com.itheima.entity.Result 
+     */
+    @PostMapping("/findPage")
+    public Result findPage(@RequestBody QueryPageBean queryPageBean) {
+        //调用业务层方法查询分页信息
+        PageResult<Package> packageList = packageService.findByPage(queryPageBean);
+        return new Result(true, MessageConstant.QUERY_PACKAGELIST_SUCCESS, packageList);
     }
 
 }

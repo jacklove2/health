@@ -2,7 +2,6 @@ package com.itheima.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.itheima.dao.MemberDao;
-import com.itheima.entity.Result;
 import com.itheima.pojo.Member;
 import com.itheima.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,8 +53,34 @@ public class MemberServiceImpl implements MemberService {
         //2.循环12个月,每月查询一次
         //3.封装数据,月份数和会员数
         Map<String, Object> map = new HashMap<>();
-        map.put("months",months);
-        map.put("memberCount",memberCount);
+        map.put("months", months);
+        map.put("memberCount", memberCount);
         return map;
     }
+
+    @Override
+    public Map<String, Object> getMemberSexProportion() {
+        //调用dao查询用户占比信息
+        List<Map<String, Object>> list = memberDao.getMemberSexProportion();
+        //存放性别的集合
+        List<String> sex = new ArrayList<>();
+        //存放性别占比的集合
+        List<Map<String, Object>> count = new ArrayList<Map<String, Object>>();
+
+        for (Map<String, Object> map : list) {
+            if (map.get("sex").equals(1)) {
+                sex.add("男");
+
+            }
+            if (map.get("sex").equals(2)) {
+                sex.add("女");
+            }
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("sex", sex);
+        map.put("count", count);
+        return map;
+    }
+
 }

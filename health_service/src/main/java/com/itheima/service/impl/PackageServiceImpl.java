@@ -1,17 +1,22 @@
 package com.itheima.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.itheima.dao.PackageDao;
+import com.itheima.entity.PageResult;
+import com.itheima.entity.QueryPageBean;
+import com.itheima.pojo.CheckGroup;
 import com.itheima.pojo.Package;
 import com.itheima.service.PackageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jmx.support.ObjectNameManager;
+import org.springframework.util.StringUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
-import java.lang.reflect.Type;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -47,39 +52,113 @@ public class PackageServiceImpl implements PackageService {
 
     //查询套餐列表
     @Override
-    public List<Package> findAll() {
-        //拿到jedis连接对象
+    public List<Package> findAll() throws IOException {
+        //从redis获得套餐列表信息
         Jedis jedis = jedisPool.getResource();
-        //通过key拿到健值
-        String pckageJson = jedis.get("package");
-        Gson gson = new Gson();
-        //判断redis是否存在
-        if (pckageJson == null || "".equals(pckageJson)) {
-            //不存在调用dao层进行查找
+        String packageStr = jedis.get("package");
+        //创建ObjecMapper
+        ObjectMapper mapper = new ObjectMapper();
+        //判断从redis中获得的套餐列表信息json数据是否为空
+        if (packageStr == null || "".equals(packageStr)) {
+            //为空 表示redis中没有套餐列表信息
+            //调用dao查询套餐列表信息
             List<Package> packageList = packageDao.findAll();
-            //将json字符串转化为json字符串
-            String jsonStr = gson.toJson(packageList);
-            //存入redis
-            jedis.set(pckageJson, jsonStr);
+            //将packageList转换成json字符串数据存放到redis中
+            packageStr = mapper.writeValueAsString(packageList);
+            jedis.set("package", packageStr);
         }
-        Type typeOfT = new TypeToken<List<Package>>() {
-        }.getType();
-        //将json字符串转化为list
-        List<Package> packageList = gson.fromJson(pckageJson, typeOfT);
+        //关闭jedis
         jedis.close();
+        //将jsonStr字符串转换成List<Package> 并返回
+        List<Package> packageList = mapper.readValue(packageStr, new TypeReference<List<Package>>() {
+        });
         return packageList;
     }
 
     //查询套餐详情
     @Override
-    public Package findById(Integer id) {
-        return packageDao.findById(id);
+    public Package findById(Integer id) throws IOException {
+        //从redis获得套餐列表信息
+        Jedis jedis = jedisPool.getResource();
+        //通过键拿到值
+        String packageDetailStr = jedis.get("packageDetail=" + id);
+        //创建ObjecMapper
+        ObjectMapper mapper = new ObjectMapper();
+        Package pkg = null;
+        //判断缓存是否有
+        if (packageDetailStr == null || "".equals(packageDetailStr)) {
+            //缓存里没有
+            //通过dao查询
+            pkg = packageDao.findById(id);
+            //通过id判断是否是同一个套餐
+            //存入redis
+            //将Package对象转化字符串并且赋值给上面的值
+            packageDetailStr = mapper.writeValueAsString(pkg);
+            //Package的字符串
+            jedis.set("packageDetail=" + id, packageDetailStr);
+        }
+        pkg = mapper.readValue(packageDetailStr, new TypeReference<Package>() {
+        });
+        //判断id是否相等
+        if (pkg.getId() != id) {
+            pkg = packageDao.findById(id);
+            packageDetailStr = mapper.writeValueAsString(pkg);
+            //Package的字符串
+            jedis.set("packageDetail=" + id, packageDetailStr);
+        }
+        jedis.close();
+        //返回pkg
+        return pkg;
+
     }
 
     //查询套餐基本详情
     @Override
-    public Package findPackageById(Integer id) {
-        return packageDao.findPackageById(id);
+    public Package findPackageById(Integer id) throws IOException {
+        //从redis获得套餐列表信息
+        Jedis jedis = jedisPool.getResource();
+        //通过键拿到值
+        String packageInfoStr = jedis.get("packageInfo=" + id);
+        //创建ObjecMapper
+        ObjectMapper mapper = new ObjectMapper();
+        Package pkg = null;
+        if (packageInfoStr == null || "".equals(packageInfoStr)) {
+            pkg = packageDao.findPackageById(id);
+            packageInfoStr = mapper.writeValueAsString(pkg);
+            jedis.set("packageInfo=" + id, packageInfoStr);
+        }
+        pkg = mapper.readValue(packageInfoStr, new TypeReference<Package>() {
+        });
+        //判断id是否相等
+        if (pkg.getId() != id) {
+            pkg = packageDao.findById(id);
+            packageInfoStr = mapper.writeValueAsString(pkg);
+            //Package的字符串
+            jedis.set("packageInfo=" + id, packageInfoStr);
+        }
+        jedis.close();
+        //返回pkg
+        return pkg;
     }
+
+    @Override
+    public PageResult<Package> findByPage(QueryPageBean queryPageBean) {
+        //拿到用户传过来的关键字
+        //判断字符串是否为空,不为空则拼接
+        if (!StringUtils.isEmpty(queryPageBean.getQueryString())) {
+            queryPageBean.setQueryString("%" + queryPageBean.getQueryString() + "%");
+        }
+        Integer pageSize = queryPageBean.getPageSize();
+        Integer currentPage = queryPageBean.getCurrentPage();
+        //通过分页插件进行分页
+        PageHelper.startPage(currentPage, pageSize);
+        //调用dao层方法查询分页结果
+        Page<Package> page = packageDao.findByPage(queryPageBean.getQueryString());
+        //封装总记录数和分页数据
+        PageResult<Package> pageResult = new PageResult<>(page.getTotal(), page.getResult());
+        return pageResult;
+    }
+
+
 }
 

@@ -10,6 +10,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -126,6 +127,19 @@ public class ReportController {
             e.printStackTrace();
         }
         return new Result(false, MessageConstant.GET_BUSINESS_REPORT_FAIL);
+    }
+
+    /**
+     * @Description: 查询男女会员的占比
+     * @Param: []
+     * @return: com.itheima.entity.Result
+     */
+    @PostMapping("/getMemberSexProportion")
+    public Result getMemberSexProportion() {
+
+        Map<String, Object> map = memberService.getMemberSexProportion();
+
+        return new Result(true, MessageConstant.GET_MEMBER_NUMBER_REPORT_SUCCESS, map);
     }
 
 }
