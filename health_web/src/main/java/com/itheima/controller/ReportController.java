@@ -9,10 +9,7 @@ import com.itheima.service.ReportService;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -55,16 +52,18 @@ public class ReportController {
         //存放套餐名称集合
         List<String> packageNames = new ArrayList<>();
         //存放套餐数据的集合
-        List<Map<String, Object>> packagelist = reportService.getPackageReport();
+        List<Map<String, Object>> packageList = reportService.getPackageReport();
 
-        if (packagelist != null) {
-            for (Map<String, Object> pkgMap : packagelist) {
+        if (packageList != null) {
+            for (Map<String, Object> pkgMap : packageList) {
                 //每一个套餐的数据
-                packageNames.add((String) pkgMap.get("name"));
+                String name = (String) pkgMap.get("name");
+                packageNames.add(name);
+
             }
         }
         map.put("packageNames", packageNames);
-        map.put("packageCount", packagelist);
+        map.put("packageCount", packageList);
 
         return new Result(true, MessageConstant.GET_PACKAGE_COUNT_REPORT_SUCCESS, map);
     }
@@ -134,9 +133,8 @@ public class ReportController {
      * @Param: []
      * @return: com.itheima.entity.Result
      */
-    @PostMapping("/getMemberSexProportion")
+    @GetMapping ("/getMemberSexProportion")
     public Result getMemberSexProportion() {
-        //那是假的
         Map<String, Object> map = memberService.getMemberSexProportion();
 
         return new Result(true, MessageConstant.GET_MEMBER_NUMBER_REPORT_SUCCESS, map);

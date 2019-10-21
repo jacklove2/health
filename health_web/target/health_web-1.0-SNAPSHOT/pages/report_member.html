@@ -72,9 +72,10 @@
             // 男女占比饼形图 1男2女
             // 基于准备好的dom，初始化echarts实例
             var myChart2 = echarts.init(document.getElementById('chart2'));
+            //
             // 使用刚指定的配置项和数据显示图表。
             //myChart.setOption(option);
-            axios.get("/report/getMemberSexProportion").then((res)=>{
+            axios.get("/report/getMemberSexProportion.do").then((res)=>{
                 myChart2.setOption({
                     title: {
                         text: '会员男女数量占比',
@@ -88,7 +89,7 @@
                     legend: {
                         orient: 'vertical',
                         left: 'left',
-                        data: res.data.data.sex
+                        data: res.data.data.sexList
                     },
                     series: [
                         {
@@ -96,7 +97,7 @@
                             type: 'pie',
                             radius: '55%',
                             center: ['50%', '60%'],
-                            data: res.data.data.count,
+                            data: res.data.data.list,
                             itemStyle: {
                                 emphasis: {
                                     shadowBlur: 10,
